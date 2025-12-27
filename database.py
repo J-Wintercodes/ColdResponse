@@ -131,6 +131,8 @@ def seed_default_keywords():
 
         if count > 0:
             return #nichts tun wenn eigene keywords
-        for keyword, score in DEFAULT_KEYWORDS:
-            cursor.execute("INSERT INTO keywords (keyword, score) VALUES (?, ?)", (keyword, score))
+        for entry in DEFAULT_KEYWORDS:
+            keyword = entry["keyword"]
+            score = entry["score"]
+            cursor.execute("INSERT INTO keywords (keyword, score) VALUES (?, ?)", (entry["keyword"], entry["score"]))
         conn.commit()

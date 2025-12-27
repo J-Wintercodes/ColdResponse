@@ -14,11 +14,18 @@ def calculate_auto_rating(email):
     text = (email['subject'] + " " + email['body']).lower()
 
     keywords = load_keywords()
-    for keyword, keyword_score in keywords:
-        if keyword.lower() in text:
-            score += keyword_score
+    words_in_text = text.split()  # Mail in einzelne Wörter aufteilen
 
-    # Score auf 100 begrenzen
+    for kw, kw_score in keywords: 
+        kw = kw.lower()
+        if kw in words_in_text:
+            score += kw_score
+        else:
+            # Teilwort-Match
+            for word in words_in_text:
+                if kw in word:
+                    score += int(kw_score * 0.8)  # minus 20%
+                    break  # nur einmal pro Keyword zahlen
     return min(score, 100)
 
 def save_new_emails(user_id, emails):
