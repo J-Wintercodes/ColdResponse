@@ -28,6 +28,7 @@ class MailApp:
         tk.Entry(input_frame, textvariable=self.notes_var, width=40).pack(side=tk.LEFT)
         tk.Button(input_frame, text="Update", command=self.update_selected).pack(side=tk.LEFT)
         tk.Button(input_frame, text="Löschen", command=self.delete_selected).pack(side=tk.LEFT)
+        tk.Button(input_frame, text="Aktualisieren", command=self.refresh_analysis).pack(side=tk.LEFT, padx=5)
         input_frame.pack(fill=tk.X, padx=5, pady=5)
         #keyword ersteller 
         keyword_frame = tk.Frame(self.root, relief=tk.RIDGE, borderwidth=1)
@@ -169,3 +170,8 @@ class MailApp:
         delete_keyword_from_db(keyword)
     
         self.load_keyword_listbox()
+    
+    def refresh_analysis(self):
+        from logic import run_full_analysis
+        run_full_analysis(self.user_id)
+        self.load_emails()

@@ -8,20 +8,22 @@ def get_connection() -> sqlite3.Connection:
     # Timeout auf 30 Sekunden erhöhen, damit Windows wartet
     return sqlite3.connect(DB_NAME, timeout=30)
 
+
 def create_tables():
     with get_connection() as conn:
         cursor = conn.cursor()
-        # Tabelle Users
-        cursor.execute('''
+
+        # USERS
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL
         )
-        ''')
+        """)
 
-        # Tabelle Emails
-        cursor.execute('''
+        # EMAILS (nur Basisstruktur!)
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS emails (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -29,21 +31,26 @@ def create_tables():
             subject TEXT,
             body TEXT,
             date TEXT,
+            message_id TEXT,
+            replied INTEGER DEFAULT 0,
             manual_rating INTEGER DEFAULT NULL,
             auto_rating INTEGER DEFAULT NULL,
             notes TEXT DEFAULT '',
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
-        ''')
+        """)
 
-        #Tabelle Keywords
-        cursor.execute('''
+        # KEYWORDS
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS keywords (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             keyword TEXT NOT NULL,
-            score INTEGER NOT NULL DEFAULT 20 --score erhöhung bei Treffer
+            score INTEGER NOT NULL DEFAULT 20
         )
-        ''')
+        """)
+
+        conn.commit()
+
 
         # Sicherstellen, dass alte DB die neuen Spalten hat
         cursor.execute("PRAGMA table_info(emails)")
@@ -85,4 +92,32 @@ def create_user(username, password_hash):
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (username, password_hash))
+        conn.commit()
+
+def get_all_emails_for_user(user_id):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, subject, body
+            FROM emails
+            WHERE user_id = ? AND replied = 0
+        """, (user_id,))
+        rows = cursor.fetchall()
+
+    emails = []
+    for row in rows:
+        emails.append({
+            "id": row[0],
+            "subject": row[1] or "",
+            "body": row[2] or ""
+        })
+    return emails
+
+def update_auto_rating(email_id, rating):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE emails SET auto_rating = ? WHERE id = ?",
+            (rating, email_id)
+        )
         conn.commit()

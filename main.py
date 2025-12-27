@@ -99,6 +99,12 @@ def main():
     save_new_emails(user_id, emails)
     print(f"{len(emails)} Mails überprüft und neue gespeichert.")
 
+    from email_api import fetch_sent_emails_mock
+    from logic import mark_replied_emails
+
+    sent= fetch_sent_emails_mock()
+    mark_replied_emails(user_id, sent)
+
     # Haupt-GUI starten
     MailApp(user_id)
 

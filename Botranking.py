@@ -76,7 +76,7 @@ def rank_emails_for_user(user_id):
     """
     Returns emails sorted by response priority (highest first)
     """
-
+   
     now = datetime.now()
 
     with get_connection() as conn:
@@ -85,7 +85,7 @@ def rank_emails_for_user(user_id):
             SELECT id, sender, subject, body, date,
                    auto_rating, manual_rating
             FROM emails
-            WHERE user_id=?
+            WHERE user_id=? AND replied=0
         """, (user_id,))
 
         rows = cursor.fetchall()

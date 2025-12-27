@@ -22,31 +22,44 @@ def calculate_auto_rating(email):
     return min(score, 100)
 
 def save_new_emails(user_id, emails):
-    """Speichert neue Mails, Duplikate überspringen."""
     with get_connection() as conn:
         cursor = conn.cursor()
 
-        # Alle vorhandenen sender+subject Kombinationen für den User abrufen
-        cursor.execute('SELECT sender, subject FROM emails WHERE user_id=?', (user_id,))
-        existing = set(cursor.fetchall())
-
-        # Zusätzliche Menge für Mails im aktuellen Batch
-        batch_seen = set()
+        # Alle vorhandenen Message-IDs des Users
+        cursor.execute(
+            "SELECT message_id FROM emails WHERE user_id=? AND message_id IS NOT NULL",
+            (user_id,)
+        )
+        existing_ids = {row[0] for row in cursor.fetchall()}
 
         for email in emails:
-            sender_subject = (email['sender'], email['subject'])
-            if sender_subject in existing or sender_subject in batch_seen:
-                continue  # Duplikat
+            msg_id = email.get("message_id")
+            if not msg_id:
+                continue  # ohne ID nicht speicherbar
+
+            if msg_id in existing_ids:
+                continue  # echtes Duplikat
 
             auto_rating = calculate_auto_rating(email)
-            cursor.execute('''
-                INSERT INTO emails (user_id, sender, subject, body, date, auto_rating)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (user_id, email['sender'], email['subject'], email['body'], email['date'], auto_rating))
 
-            batch_seen.add(sender_subject)  # verhindert Doppel-Einfügung innerhalb dieses Batchs
+            cursor.execute("""
+                INSERT INTO emails (
+                    user_id, sender, subject, body, date,
+                    auto_rating, message_id, replied
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+            """, (
+                user_id,
+                email["sender"],
+                email["subject"],
+                email["body"],
+                email["date"],
+                auto_rating,
+                msg_id
+            ))
 
         conn.commit()
+
 #wahrscheinlich liegen die duplikate daran dass die fake mails schon erstell wurden
 from database import get_connection
 
@@ -84,3 +97,52 @@ def delete_keyword_from_db(keyword):
     cursor.execute("DELETE FROM keywords WHERE keyword=?", (keyword,))
     conn.commit()
     conn.close()
+
+def mark_replied_emails(user_id, sent_emails):
+    from database import get_connection
+    
+    with get_connection() as conn:
+        cursor = conn.cursor()
+
+        for sent in sent_emails:
+            reply_to = sent.get("in_reply_to")
+            if not reply_to:
+                continue
+
+            cursor.execute("""
+                UPDATE emails 
+                SET replied = 1
+                WHERE user_id = ? AND message_id = ?
+                """,
+                (user_id, reply_to))
+        conn.commit()                   
+            
+def run_full_analysis(user_id):
+    from email_api import fetch_emails_mock, fetch_sent_emails_mock
+    from logic import save_new_emails, mark_replied_emails, recalculate_all_auto_ratings
+
+    inbox_emails =  fetch_emails_mock() #inbox
+    save_new_emails(user_id, inbox_emails)
+
+    sent_emails = fetch_sent_emails_mock() #sent
+    mark_replied_emails(user_id, sent_emails)
+
+    recalculate_all_auto_ratings(user_id)
+
+def update_auto_rating(email_id, rating):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE emails SET auto_rating = ? WHERE id = ?",
+            (rating, email_id)
+        )
+        conn.commit()
+
+def recalculate_all_auto_ratings(user_id):
+    from database import get_all_emails_for_user, update_auto_rating
+
+    emails = get_all_emails_for_user(user_id)
+
+    for email in emails:
+        rating = calculate_auto_rating(email)
+        update_auto_rating(email["id"], rating)
