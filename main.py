@@ -85,7 +85,8 @@ def show_login_or_register():
 
 def main():
     create_tables()  # Tabellen erstellen
-
+    from database import seed_default_keywords
+    seed_default_keywords()
     show_splash()  # Splash-Fenster
 
     # Login oder Registrierung in GUI, liefert user_id zurück

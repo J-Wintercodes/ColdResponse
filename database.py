@@ -121,3 +121,16 @@ def update_auto_rating(email_id, rating):
             (rating, email_id)
         )
         conn.commit()
+
+def seed_default_keywords():
+    from starterpack import DEFAULT_KEYWORDS
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM keywords")
+        count = cursor.fetchone()[0]
+
+        if count > 0:
+            return #nichts tun wenn eigene keywords
+        for keyword, score in DEFAULT_KEYWORDS:
+            cursor.execute("INSERT INTO keywords (keyword, score) VALUES (?, ?)", (keyword, score))
+        conn.commit()

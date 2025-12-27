@@ -10,7 +10,7 @@ class MailApp:
         self.root.title("ColdResponse Mails")
 
         # Treeview erstellen
-        self.tree = ttk.Treeview(self.root, columns=("Sender", "Subject", "Date", "Auto Rating", "Manual Rating", "Notes"), show="headings")
+        self.tree = ttk.Treeview(self.root, columns=("Absender", "Inhalt", "Datum", "Automatische Bewertung", "Individuelle Bewertung", "Notizen"), show="headings")
         for col in self.tree["columns"]:
             self.tree.heading(col, text=col)
         self.tree.pack(fill=tk.BOTH, expand=True)
@@ -22,12 +22,12 @@ class MailApp:
         self.new_keyword_score_var = tk.IntVar(value=20)  # Default 20 Punkte
 
         input_frame = tk.Frame(self.root)
-        tk.Label(input_frame, text="Manual Rating (0-100):").pack(side=tk.LEFT)
+        tk.Label(input_frame, text="Individuelle Bewertung (0-100):").pack(side=tk.LEFT)
         tk.Entry(input_frame, textvariable=self.manual_rating_var, width=5).pack(side=tk.LEFT)
         tk.Label(input_frame, text="Notes:").pack(side=tk.LEFT)
         tk.Entry(input_frame, textvariable=self.notes_var, width=40).pack(side=tk.LEFT)
         tk.Button(input_frame, text="Update", command=self.update_selected).pack(side=tk.LEFT)
-        tk.Button(input_frame, text="Löschen", command=self.delete_selected).pack(side=tk.LEFT)
+        tk.Button(input_frame, text="Verstecken", command=self.delete_selected).pack(side=tk.LEFT)
         tk.Button(input_frame, text="Aktualisieren", command=self.refresh_analysis).pack(side=tk.LEFT, padx=5)
         input_frame.pack(fill=tk.X, padx=5, pady=5)
         #keyword ersteller 

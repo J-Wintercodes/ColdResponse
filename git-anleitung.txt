@@ -4,6 +4,6 @@ git commit -m "Version 2.0"
 git tag v2.0
 git log --oneline
 
-1.0 basis
-1.1 message_id fix, *in-reply-to lässt mail verschwinden*, nur fetch_sent_emails austauschen für Outlook, 1.inbox speichern 2.sent prüfen 3.replies markieren 4.UI starten
-1.2 app aktualisierung 1.neue inbox mails holen 2.neue mails speichern 3.sent-mails holen 4.in-reply-to ausewerten 5.auto-ratings neu berechnen 6.ui neu laden
+1.0 message_id fix, *in-reply-to lässt mail verschwinden*, nur fetch_sent_emails austauschen für Outlook, 1.inbox speichern 2.sent prüfen 3.replies markieren 4.UI starten
+1.1 app aktualisierung 1.neue inbox mails holen 2.neue mails speichern 3.sent-mails holen 4.in-reply-to ausewerten 5.auto-ratings neu berechnen 6.ui neu laden
+1.2 starterpack keywords bei leerer db

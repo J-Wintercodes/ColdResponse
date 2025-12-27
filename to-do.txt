@@ -238,3 +238,5 @@ weniger Ärger
 keine verpassten Kunden
 
 Zeitersparnis
+
+1.2: Mail Löschen button funktioniert nur noch als verstecken (aktualisierung macht rückgängig) -> falscher bezug von ui hier zu db löschvorgang?
