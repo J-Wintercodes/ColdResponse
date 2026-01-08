@@ -29,9 +29,9 @@ from PIL import Image, ImageTk
 def show_splash():
     splash = tk.Tk()
     splash.overrideredirect(True)
-    splash.geometry("400x300+500+300")
-    img = Image.open("ColdResponse_titlescreen.jpg")
-    img = img.resize((400, 300))
+    splash.geometry("800x500")
+    img = Image.open("ColdResponse_titlescreen1.jpg")
+    img = img.resize((800, 500))
     photo = ImageTk.PhotoImage(img)
     label = tk.Label(splash, image=photo)
     label.image = photo  # Referenz halten, sonst verschwindet das Bild
@@ -43,7 +43,7 @@ def show_splash():
 def show_login_or_register():
     root = tk.Tk()
     root.title("Login / Registrierung")
-    root.geometry("600x500")
+    root.geometry("800x500")
 
     result = {"user_id": None}  # expliziter Container
 
