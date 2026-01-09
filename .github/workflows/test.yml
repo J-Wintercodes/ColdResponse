@@ -2,18 +2,18 @@ name: macos-test
 
 on: [push]
 
-jobs: 
+jobs:
   test:
     runs-on: macos-latest
     steps:
-      -uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      -uses: actions/setup-python@v5
-      with:
-        python-version: "3.14.2"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      -name: Install dependencies
-      run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-      -name: Run project
-      run: python main.py
+      - name: Run project
+        run: python main.py
