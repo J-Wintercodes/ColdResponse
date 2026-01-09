@@ -9,3 +9,8 @@ git log --oneline
 1.2 starterpack keywords bei leerer db
 	1.2.1 kategorien für starterpack & 80% wert für keyword teiltreffer 
 // start bei 1.0 wieder
+
+--für push--
+git add.
+git commit -m" "
+git push
