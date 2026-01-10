@@ -51,25 +51,36 @@ def compute_priority(email, now):
     email_date = parse_date(email["date"])
     age_days = (now - email_date).total_seconds() / 86400
 
-    # Tier 1: manual rating override
-    if email["manual_rating"] is not None:
+    manual = email["manual_rating"]
+
+    # Tier 3: explicit positive manual priority
+    if manual is not None and manual > 0:
         return (
-            2,                              # tier
-            email["manual_rating"],         # primary
-            -age_days                       # secondary (older = higher prio)
+            3,          # highest tier
+            manual,
+            -age_days
         )
 
-    # Tier 2: automatic ranking
+    # Tier 0: hidden mails (manual_rating == 0)
+    if manual == 0:
+        return (
+            0,          # lowest tier
+            0,
+            -age_days
+        )
+
+    # Tier 2: automatic ranking (manual_rating is None)
     factor = urgency_factor(age_days)
     score = (email["auto_rating"] or 0) * factor
     if email.get("has_attachment", False):
         score += 30
-        
+
     return (
-        1,          # tier
-        score,      # computed priority
+        2,
+        score,
         -age_days
     )
+
 
 
 def rank_emails_for_user(user_id):

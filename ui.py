@@ -15,6 +15,22 @@ class MailApp:
             self.tree.heading(col, text=col)
         self.tree.pack(fill=tk.BOTH, expand=True)
 
+        from PIL import Image, ImageTk
+        watermark_frame = tk.Frame(self.root)
+        watermark_frame.pack(fill=tk.X)
+        
+        wm_img = Image.open("Coldresponse_watermark.jpg")
+        wm_img = wm_img.resize((500, 100))
+        wm_photo = ImageTk.PhotoImage(wm_img)
+
+        watermark_label = tk.Label(watermark_frame, image=wm_photo)
+        watermark_label.image = wm_photo
+        watermark_label.pack(pady = 4)
+            
+        
+
+
+
         # Eingabefelder
         self.manual_rating_var = tk.IntVar()
         self.notes_var = tk.StringVar()
@@ -27,7 +43,8 @@ class MailApp:
         tk.Label(input_frame, text="Notes:").pack(side=tk.LEFT)
         tk.Entry(input_frame, textvariable=self.notes_var, width=40).pack(side=tk.LEFT)
         tk.Button(input_frame, text="Update", command=self.update_selected).pack(side=tk.LEFT)
-        tk.Button(input_frame, text="Verstecken", command=self.delete_selected).pack(side=tk.LEFT)
+        tk.Button(input_frame, text="Löschen", command=self.delete_selected).pack(side=tk.LEFT)
+        tk.Button(input_frame, text = "Wiederherstellen", command= self.recreate_selected).pack(side=tk.LEFT)
         tk.Button(input_frame, text="Aktualisieren", command=self.refresh_analysis).pack(side=tk.LEFT, padx=5)
         input_frame.pack(fill=tk.X, padx=5, pady=5)
         #keyword ersteller 
@@ -115,20 +132,25 @@ class MailApp:
         conn.close()
         self.load_emails()
 
+
+
     def delete_selected(self):
         selected = self.tree.selection()
         if not selected:
             return
+        email_id  = selected[0]
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE emails SET manual_rating = 0 WHERE id = ?" , 
+                (email_id,)
+            )
+            conn.commit()
+        self.tree.delete(email_id)
         
-        conn = get_connection()
-        cursor = conn.cursor()
-        for mail_id in selected:
-            cursor.execute('DELETE FROM emails WHERE id=?', (mail_id,))
-            self.tree.delete(mail_id)
-        conn.commit()
-        conn.close()
 
     def get_username(self):
+        
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT username FROM users WHERE id=?', (self.user_id,))
@@ -169,9 +191,25 @@ class MailApp:
         from logic import delete_keyword_from_db
         delete_keyword_from_db(keyword)
     
-        self.load_keyword_listbox()
+        
+        self.refresh_analysis()
     
     def refresh_analysis(self):
         from logic import run_full_analysis
         run_full_analysis(self.user_id)
         self.load_emails()
+
+    def recreate_selected(self):
+        selected = self.tree.selection()
+        if not selected: 
+            return
+        email_id = selected[0]
+
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE emails SET manual_rating = NULL WHERE id = ?",
+                (email_id,)
+            )
+            conn.commit()
+        self.refresh_analysis()

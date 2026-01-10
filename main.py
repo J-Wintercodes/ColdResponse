@@ -29,16 +29,23 @@ from PIL import Image, ImageTk
 def show_splash():
     splash = tk.Tk()
     splash.overrideredirect(True)
-    splash.geometry("800x500")
-    img = Image.open("ColdResponse_titlescreen1.jpg")
-    img = img.resize((800, 500))
-    photo = ImageTk.PhotoImage(img)
-    label = tk.Label(splash, image=photo)
-    label.image = photo  # Referenz halten, sonst verschwindet das Bild
-    label.pack()
+    
+    width, height = 800, 500
 
-    splash.update()
-    splash.after(1500, splash.destroy)  # Fenster nach 1,5 Sekunden schließen
+    screen_w = splash.winfo_screenwidth()
+    screen_h = splash.winfo_screenheight()
+    x = (screen_w -width) // 2
+    y = (screen_h -height) // 2
+
+    splash.geometry(f"{width}x{height}+{x}+{y}")
+
+    img = Image.open("ColdResponse_titlescreen1.jpg")
+    img = img.resize((width, height))
+    photo = ImageTk.PhotoImage(img)
+    label = tk.Label(splash, image = photo)
+    label.image = photo
+    label.pack()
+    splash.after(1500, splash.destroy)
     splash.mainloop()
 def show_login_or_register():
     root = tk.Tk()
