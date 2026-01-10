@@ -40,23 +40,40 @@ class MailApp:
         input_frame = tk.Frame(self.root)
         tk.Label(input_frame, text="Individuelle Bewertung (0-100):").pack(side=tk.LEFT)
         tk.Entry(input_frame, textvariable=self.manual_rating_var, width=5).pack(side=tk.LEFT)
-        tk.Label(input_frame, text="Notes:").pack(side=tk.LEFT)
+        tk.Label(input_frame, text="Notizen:").pack(side=tk.LEFT)
         tk.Entry(input_frame, textvariable=self.notes_var, width=40).pack(side=tk.LEFT)
-        tk.Button(input_frame, text="Update", command=self.update_selected).pack(side=tk.LEFT)
-        tk.Button(input_frame, text="Löschen", command=self.delete_selected).pack(side=tk.LEFT)
-        tk.Button(input_frame, text = "Wiederherstellen", command= self.recreate_selected).pack(side=tk.LEFT)
-        tk.Button(input_frame, text="Aktualisieren", command=self.refresh_analysis).pack(side=tk.LEFT, padx=5)
+        btn1 = tk.Button(input_frame, text="Update", command=self.update_selected)
+        btn1.pack(side=tk.LEFT)
+        Tooltip_Right(btn1, "Ändert Individuelle Bewertung")
+
+        btn2 = tk.Button(input_frame, text="Löschen", command=self.delete_selected)
+        btn2.pack(side=tk.LEFT)
+        Tooltip_Right(btn2, "Setzt Relevanz auf 0")
+
+        btn3 = tk.Button(input_frame, text = "Wiederherstellen", command= self.recreate_selected)
+        btn3.pack(side=tk.LEFT, padx=5)
+        Tooltip_Right(btn3, "Setzt Relevanz zurück über 0")
+
+        btn4 = tk.Button(input_frame, text="Aktualisieren", command=self.refresh_analysis)
+        btn4.pack(side=tk.LEFT, padx=5)
+
+
+
         input_frame.pack(fill=tk.X, padx=5, pady=5)
         #keyword ersteller 
         keyword_frame = tk.Frame(self.root, relief=tk.RIDGE, borderwidth=1)
         keyword_frame.pack(fill=tk.X, padx=5, pady=5)
 
         # Neues Keyword
-        tk.Label(keyword_frame, text="Neues Keyword:").pack(side=tk.LEFT)
+        tk.Label(keyword_frame, text="Neues Schlüsselwort:").pack(side=tk.LEFT)
         tk.Entry(keyword_frame, textvariable=self.new_keyword_var, width=20).pack(side=tk.LEFT)
         tk.Label(keyword_frame, text="Score:").pack(side=tk.LEFT)
+
         tk.Entry(keyword_frame, textvariable=self.new_keyword_score_var, width=5).pack(side=tk.LEFT)
-        tk.Button(keyword_frame, text="Hinzufügen", command=self.add_keyword).pack(side=tk.LEFT)
+        btn5 = tk.Button(keyword_frame, text="Hinzufügen", command=self.add_keyword)
+        btn5.pack(side=tk.LEFT)
+        Tooltip_Right(btn5, "Stammbaum ist effektiver als ganzes Wort, gibt aber weniger Relevanzpunkte, z.B. 'schnell' anstatt 'Schnelligkeit'")
+        
 
         # Statusleiste
         self.username = self.get_username()
@@ -73,7 +90,9 @@ class MailApp:
         self.keyword_listbox.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
 
         # Löschen-Button
-        tk.Button(keyword_frame, text="Keyword löschen", command=self.delete_selected_keyword).pack(side=tk.LEFT)
+        btn6 = tk.Button(keyword_frame, text="Schlüsselwort löschen", command=self.delete_selected_keyword)
+        btn6.pack(side=tk.LEFT)
+        Tooltip_Left(btn6, "App-Neustart erforderlich")
 
 # Lade Keywords direkt in die Listbox
         self.load_keyword_listbox()
@@ -213,3 +232,76 @@ class MailApp:
             )
             conn.commit()
         self.refresh_analysis()
+
+import tkinter as tk
+
+class Tooltip_Right: #Informationsfenster rechts
+    def __init__(self, widget, text, click=False):
+        self.widget = widget
+        self.text = text
+        self.tipwindow = None
+        self.click = click
+
+        if click:
+            self.widget.bind("<Button-1>", self.show_tooltip)
+        else:
+            self.widget.bind("<Enter>", self.show_tooltip)
+            self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event=None):
+        if self.tipwindow:
+            return
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.overrideredirect(True)
+        tw.wm_attributes("-topmost", True)
+        label = tk.Label(tw, text=self.text, bg="#ffffe0", relief="solid", borderwidth=1, justify="left")
+        label.pack(ipadx=5, ipady=3)
+
+        # Position rechts neben Button
+        x = self.widget.winfo_rootx() + self.widget.winfo_width() + 5
+        y = self.widget.winfo_rooty()
+        tw.geometry(f"+{x}+{y}")
+
+        if not self.click:
+            # Für Hover Tooltip automatisch schließen
+            tw.bind("<Leave>", self.hide_tooltip)
+
+    def hide_tooltip(self, event=None):
+        if self.tipwindow:
+            self.tipwindow.destroy()
+            self.tipwindow = None
+class Tooltip_Left: #Informationsfenster links
+    def __init__(self, widget, text, click=False):
+        self.widget = widget
+        self.text = text
+        self.tipwindow = None
+        self.click = click
+
+        if click:
+            self.widget.bind("<Button-1>", self.show_tooltip)
+        else:
+            self.widget.bind("<Enter>", self.show_tooltip)
+            self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event=None):
+        if self.tipwindow:
+            return
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.overrideredirect(True)
+        tw.wm_attributes("-topmost", True)
+        label = tk.Label(tw, text=self.text, bg="#ffffe0", relief="solid", borderwidth=1, justify="left")
+        label.pack(ipadx=5, ipady=3)
+
+        # Position rechts neben Button
+        x = self.widget.winfo_rootx() - tw.winfo_reqwidth() - 1
+        y = self.widget.winfo_rooty()
+        tw.geometry(f"+{x}+{y}")
+
+        if not self.click:
+            # Für Hover Tooltip automatisch schließen
+            tw.bind("<Leave>", self.hide_tooltip)
+
+    def hide_tooltip(self, event=None):
+        if self.tipwindow:
+            self.tipwindow.destroy()
+            self.tipwindow = None
