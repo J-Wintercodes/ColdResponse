@@ -1,5 +1,0 @@
-Username	Passwort
-
-testuser	1234
-jaku		d 
-jaka		 d
