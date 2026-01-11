@@ -49,6 +49,14 @@ def create_tables():
         )
         """)
 
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value INTEGER
+        )
+        """)
+
         conn.commit()
 
 

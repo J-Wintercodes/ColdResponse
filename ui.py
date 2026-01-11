@@ -68,6 +68,9 @@ class MailApp:
         tk.Label(keyword_frame, text="Neues Schlüsselwort:").pack(side=tk.LEFT)
         tk.Entry(keyword_frame, textvariable=self.new_keyword_var, width=20).pack(side=tk.LEFT)
         tk.Label(keyword_frame, text="Score:").pack(side=tk.LEFT)
+        settings_button = tk.Button(keyword_frame, text="Einstellungen", command=self.open_settings_popup)
+        settings_button.pack(side=tk.LEFT, padx=5)
+
 
         tk.Entry(keyword_frame, textvariable=self.new_keyword_score_var, width=5).pack(side=tk.LEFT)
         btn5 = tk.Button(keyword_frame, text="Hinzufügen", command=self.add_keyword)
@@ -151,7 +154,7 @@ class MailApp:
         conn.close()
         self.load_emails()
 
-
+    
 
     def delete_selected(self):
         selected = self.tree.selection()
@@ -167,7 +170,43 @@ class MailApp:
             conn.commit()
         self.tree.delete(email_id)
         
+    def open_settings_popup(self):
+        popup = tk.Toplevel(self.root)
+        popup.title("Einstellungen")
+        popup.geometry("500x250")  # Größe anpassen
 
+    # Attachment Score Label + Entry
+        tk.Label(popup, text="Score-Erhöhung wenn Mail einen Anhang enthält").pack(pady=(10, 2))
+        
+
+    # Hole aktuellen Wert aus DB oder Standard +30
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM settings WHERE key='attachment_score'")
+        result = cursor.fetchone()
+        conn.close()
+        current_score = result[0] if result else 30
+
+        attachment_var = tk.IntVar(value=current_score)
+        tk.Entry(popup, textvariable=attachment_var, width=5).pack(pady=5)
+        tk.Label(popup, text="Wenn eine Mail in einer Konversation geschickt wurde, wird sie NICHT angezeigt.").pack(pady=(10, 2))
+    # Speichern Button
+        def save_settings():
+            score = attachment_var.get()
+            with get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO settings(key, value)
+                    VALUES ('attachment_score', ?)
+                    ON CONFLICT(key) DO UPDATE SET value=excluded.value
+                """, (score,))
+                conn.commit()
+            popup.destroy()  # <- muss hier drin sein, innerhalb der Funktion
+
+        tk.Button(popup, text="Speichern", command=save_settings).pack(pady=10)
+
+
+        
     def get_username(self):
         
         conn = get_connection()
@@ -232,6 +271,8 @@ class MailApp:
             )
             conn.commit()
         self.refresh_analysis()
+
+    
 
 import tkinter as tk
 
